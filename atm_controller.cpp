@@ -20,10 +20,11 @@ bool c_utils::n_exit(string str) {
 
 class c_Account: public c_utils {
 private:
-	unsigned long long money;
+	unsigned int money;
 
 	void see_balance();
 	void deposit();
+	bool overflow_chk(unsigned int money1, unsigned int money2);
 	void withdraw();
 	bool valid_input_money(string str);
 
@@ -33,7 +34,7 @@ public:
 };
 
 c_Account::c_Account() {
-	money = 0;
+	this->money = 0;
 }
 
 void c_Account::option() {
@@ -95,16 +96,26 @@ void c_Account::see_balance() {
 	cout << "$\n";
 }
 void c_Account::deposit() {
+	system("clear");
 	cout << "After making a deposit, ";
 	cout << "please enter the amount you deposited(in dollars).\n";
 	
 	string simoney;
-	unsigned long long imoney;
+	unsigned int imoney;
 
 	while(1) {
+		cout << "If you want to exit, enter [n].\n\n";
 		cin >> simoney;
+		if(this->n_exit(simoney))
+			return ;
 		if(valid_input_money(simoney)) {
-			imoney = stoull(simoney);
+			imoney = stoul(simoney);
+			if(overflow_chk(imoney, this->money)) {
+				cout << "Account is full.\n";
+				cout << "Deposit failed.\n";
+				cout << "Please enter properly.\n";
+				continue;
+			}
 			this->money += imoney;
 			cout << "The ";
 			cout << imoney;
@@ -118,17 +129,32 @@ void c_Account::deposit() {
 	}
 }
 
+bool c_Account::overflow_chk(unsigned int money1, unsigned int money2) {
+	unsigned int sum = money1 + money2;
+
+	if(sum < max(money1, money2)) {
+		return (true);
+	}
+	else
+		return (false);
+}
+
+
 void c_Account::withdraw() {
+	system("clear");
 	cout << "After withdrawing, ";
 	cout << "please enter the amount you withdrew(in dollars).\n";
 	
 	string simoney;
-	unsigned long long imoney;
+	unsigned int imoney;
 
 	while(1) {
+		cout << "If you want to exit, enter [n].\n\n";
 		cin >> simoney;
+		if(this->n_exit(simoney))
+			return ;
 		if(valid_input_money(simoney)) {
-			imoney = stoull(simoney);
+			imoney = stoul(simoney);
 			if(this->money < imoney) {
 				cout << "Insufficient balance.\n";
 				cout << "Withdrawal failed.\n";
@@ -147,7 +173,7 @@ void c_Account::withdraw() {
 }
 bool c_Account::valid_input_money(string str) {
 	
-	// ULLONG_MAX: 4,294,967,295
+	// UINT_MAX: 4,294,967,295
 	if (str.size() > 10)
 		return (false);
 	else {
@@ -155,11 +181,11 @@ bool c_Account::valid_input_money(string str) {
 			if(!isdigit(el))
 				return (false);
 		}
-		unsigned long long res;
+		unsigned int res = 0;
 		int i = 0;
 
 		while(str[i] >= '0' && str[i] <= '9') {
-			if (res > ULLONG_MAX / 10 || (res == ULLONG_MAX / 10 && str[i] - '0' > 7))
+			if (res > UINT_MAX / 10 || (res == UINT_MAX / 10 && str[i] - '0' > 7))
 				return (false);
 			res = res * 10 + str[i++] - '0';
 		}
